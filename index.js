@@ -7,8 +7,21 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-connectDB();
+const startServer = async () => {
+  try {
+    const conn = await connectDB();
+    console.log(`MongoDB connected: ${conn.connection.host}`);
+
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error(`Database connection error: ${error.message}`);
+    process.exit(1);
+  }
+};
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -45,8 +58,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, error: 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+startServer();
