@@ -1,4 +1,5 @@
 import Listing from '../models/Listing.js';
+import { _createNotification as createNotification } from '../controllers/notificationController.js';
 
 const createListing = async (req, res) => {
   try {

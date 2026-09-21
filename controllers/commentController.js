@@ -1,4 +1,9 @@
 import Comment from '../models/Comment.js';
+import Post from '../models/Post.js';
+import Listing from '../models/Listing.js';
+import Event from '../models/Event.js';
+import News from '../models/News.js';
+import { _createNotification as createNotification } from '../controllers/notificationController.js';
 
 export const getComments = async (req, res) => {
   try {
@@ -98,6 +103,78 @@ export const createComment = async (req, res) => {
       parentComment: parentComment || null,
     });
 
+    // Create notification for the entity author
+    if (!parentComment) {
+      let entityAuthor = null;
+      let entityTitle = '';
+      let notificationType = '';
+
+      switch (commentableType) {
+        case 'Post': {
+          const post = await Post.findById(commentableId).populate('author', 'fullName');
+          if (post) {
+            entityAuthor = post.author;
+            entityTitle = post.content.substring(0, 50);
+            notificationType = 'post_commented';
+          }
+          break;
+        }
+        case 'Listing': {
+          const listing = await Listing.findById(commentableId).populate('seller', 'fullName');
+          if (listing) {
+            entityAuthor = listing.seller;
+            entityTitle = listing.title;
+            notificationType = 'listing_inquired';
+          }
+          break;
+        }
+        case 'Event': {
+          const event = await Event.findById(commentableId).populate('author', 'fullName');
+          if (event) {
+            entityAuthor = event.author;
+            entityTitle = event.title;
+            notificationType = 'event_commented';
+          }
+          break;
+        }
+        case 'News': {
+          const news = await News.findById(commentableId).populate('author', 'fullName');
+          if (news) {
+            entityAuthor = news.author;
+            entityTitle = news.title;
+            notificationType = 'news_commented';
+          }
+          break;
+        }
+      }
+
+      if (entityAuthor && !entityAuthor._id.equals(author)) {
+        await createNotification({
+          user: entityAuthor._id,
+          type: notificationType,
+          title: 'New Comment',
+          message: `${req.user.fullName} commented on "${entityTitle}"`,
+          actor: author,
+          entityType: commentableType,
+          entityId: commentableId,
+        });
+      }
+    } else if (parentComment) {
+      // Reply notification to parent comment author
+      const parent = await Comment.findById(parentComment).populate('author', 'fullName');
+      if (parent && !parent.author._id.equals(author)) {
+        await createNotification({
+          user: parent.author._id,
+          type: 'comment_replied',
+          title: 'New Reply',
+          message: `${req.user.fullName} replied to your comment`,
+          actor: author,
+          entityType: 'Comment',
+          entityId: parentComment,
+        });
+      }
+    }
+
     await comment.populate('author', 'fullName email avatar');
 
     res.status(201).json({ success: true, comment });
@@ -175,6 +252,19 @@ export const likeComment = async (req, res) => {
     } else {
       comment.likedBy.push(userId);
       comment.likes += 1;
+
+      // Create notification for comment author
+      if (!comment.author.equals(userId)) {
+        await createNotification({
+          user: comment.author,
+          type: 'comment_liked',
+          title: 'Comment Liked',
+          message: `${req.user.fullName} liked your comment`,
+          actor: userId,
+          entityType: 'Comment',
+          entityId: comment._id,
+        });
+      }
     }
 
     await comment.save();

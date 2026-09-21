@@ -12,6 +12,7 @@ import leagueRoutes from './routes/leagueRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import postRoutes from './routes/postRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -57,6 +58,7 @@ app.get('/', (req, res) => {
       posts: '/api/posts',
       comments: '/api/comments',
       messages: '/api/messages',
+      notifications: '/api/notifications',
     },
   });
 });
@@ -70,6 +72,7 @@ app.use('/api/leagues', leagueRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });

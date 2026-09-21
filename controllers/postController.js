@@ -1,5 +1,6 @@
 import Post from '../models/Post.js';
 import User from '../models/User.js';
+import { _createNotification as createNotification } from '../controllers/notificationController.js';
 
 export const getPosts = async (req, res) => {
   try {
@@ -191,6 +192,19 @@ export const likePost = async (req, res) => {
     } else {
       post.likedBy.push(userId);
       post.likes += 1;
+
+      // Create notification for post author
+      if (!post.author.equals(userId)) {
+        await createNotification({
+          user: post.author,
+          type: 'post_liked',
+          title: 'New Like',
+          message: `${req.user.fullName} liked your post`,
+          actor: userId,
+          entityType: 'Post',
+          entityId: post._id,
+        });
+      }
     }
 
     await post.save();
@@ -211,6 +225,20 @@ export const sharePost = async (req, res) => {
 
     post.shares += 1;
     await post.save();
+
+    // Create notification for post author
+    if (!post.author.equals(req.user.id)) {
+      await createNotification({
+        user: post.author,
+        type: 'post_shared',
+        title: 'Post Shared',
+        message: `${req.user.fullName} shared your post`,
+        actor: req.user.id,
+        entityType: 'Post',
+        entityId: post._id,
+      });
+    }
+
     res.json({ success: true, shares: post.shares });
   } catch (error) {
     console.error('Share post error:', error);

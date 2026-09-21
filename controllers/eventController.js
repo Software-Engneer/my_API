@@ -1,4 +1,5 @@
 import Event from '../models/Event.js';
+import { _createNotification as createNotification } from '../controllers/notificationController.js';
 
 const createEvent = async (req, res) => {
   try {
@@ -189,6 +190,19 @@ const attendEvent = async (req, res) => {
 
     event.attendees += 1;
     await event.save();
+
+    // Create notification for event organizer
+    if (!event.author.equals(req.user.id)) {
+      await createNotification({
+        user: event.author,
+        type: 'event_attending',
+        title: 'New Attendee',
+        message: `${req.user.fullName} is attending your event "${event.title}"`,
+        actor: req.user.id,
+        entityType: 'Event',
+        entityId: event._id,
+      });
+    }
 
     res.json({
       success: true,

@@ -1,5 +1,6 @@
 import Message from '../models/Message.js';
 import User from '../models/User.js';
+import { _createNotification as createNotification } from '../controllers/notificationController.js';
 
 export const getConversations = async (req, res) => {
   try {
@@ -173,6 +174,17 @@ export const sendMessage = async (req, res) => {
 
     await message.populate('sender', 'fullName avatar');
     await message.populate('recipient', 'fullName avatar');
+
+    // Create notification for recipient
+    await createNotification({
+      user: recipientId,
+      type: 'message_received',
+      title: 'New Message',
+      message: `${req.user.fullName} sent you a message`,
+      actor: senderId,
+      entityType: 'Message',
+      entityId: message._id,
+    });
 
     const io = req.app.get('io');
     if (io) {

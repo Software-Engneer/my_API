@@ -1,4 +1,5 @@
 import News from '../models/News.js';
+import { _createNotification as createNotification } from '../controllers/notificationController.js';
 
 const createNews = async (req, res) => {
   try {
@@ -185,6 +186,19 @@ const likeNews = async (req, res) => {
     news.likes += 1;
     await news.save();
 
+    // Create notification for news author
+    if (!news.author.equals(req.user.id)) {
+      await createNotification({
+        user: news.author,
+        type: 'news_liked',
+        title: 'Article Liked',
+        message: `${req.user.fullName} liked your article "${news.title}"`,
+        actor: req.user.id,
+        entityType: 'News',
+        entityId: news._id,
+      });
+    }
+
     res.json({
       success: true,
       likes: news.likes,
@@ -210,6 +224,19 @@ const shareNews = async (req, res) => {
 
     news.shares += 1;
     await news.save();
+
+    // Create notification for news author
+    if (!news.author.equals(req.user.id)) {
+      await createNotification({
+        user: news.author,
+        type: 'news_shared',
+        title: 'Article Shared',
+        message: `${req.user.fullName} shared your article "${news.title}"`,
+        actor: req.user.id,
+        entityType: 'News',
+        entityId: news._id,
+      });
+    }
 
     res.json({
       success: true,
