@@ -10,6 +10,7 @@ import newsRoutes from './routes/newsRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import leagueRoutes from './routes/leagueRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ const startServer = async () => {
 
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:8080',
   process.env.FRONTEND_URL,
   'https://kwathu-delta.vercel.app'
 ].filter(Boolean);
@@ -62,6 +64,7 @@ app.use('/api/news', newsRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/leagues', leagueRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });
