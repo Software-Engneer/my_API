@@ -11,6 +11,7 @@ import eventRoutes from './routes/eventRoutes.js';
 import leagueRoutes from './routes/leagueRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
+import postRoutes from './routes/postRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,6 +54,9 @@ app.get('/', (req, res) => {
       news: '/api/news',
       events: '/api/events',
       leagues: '/api/leagues',
+      posts: '/api/posts',
+      comments: '/api/comments',
+      messages: '/api/messages',
     },
   });
 });
@@ -65,6 +69,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/leagues', leagueRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/posts', postRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });

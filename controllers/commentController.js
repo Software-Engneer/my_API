@@ -17,10 +17,10 @@ export const getComments = async (req, res) => {
 
     const [comments, total] = await Promise.all([
       Comment.find(filter)
-        .populate('author', 'name email avatar')
+        .populate('author', 'fullName email avatar')
         .populate({
           path: 'replies',
-          populate: { path: 'author', select: 'name email avatar' },
+          populate: { path: 'author', select: 'fullName email avatar' },
           options: { sort: { createdAt: 1 } },
         })
         .sort(sort)
@@ -50,10 +50,10 @@ export const getCommentById = async (req, res) => {
   try {
     const { id } = req.params;
     const comment = await Comment.findById(id)
-      .populate('author', 'name email avatar')
+      .populate('author', 'fullName email avatar')
       .populate({
         path: 'replies',
-        populate: { path: 'author', select: 'name email avatar' },
+        populate: { path: 'author', select: 'fullName email avatar' },
       })
       .lean();
 
@@ -98,7 +98,7 @@ export const createComment = async (req, res) => {
       parentComment: parentComment || null,
     });
 
-    await comment.populate('author', 'name email avatar');
+    await comment.populate('author', 'fullName email avatar');
 
     res.status(201).json({ success: true, comment });
   } catch (error) {
@@ -126,7 +126,7 @@ export const updateComment = async (req, res) => {
     comment.isEdited = true;
     await comment.save();
 
-    await comment.populate('author', 'name email avatar');
+    await comment.populate('author', 'fullName email avatar');
 
     res.json({ success: true, comment });
   } catch (error) {

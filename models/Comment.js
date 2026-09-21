@@ -16,7 +16,7 @@ const commentSchema = new mongoose.Schema(
     commentableType: {
       type: String,
       required: true,
-      enum: ['Listing', 'News', 'Event', 'League'],
+      enum: ['Listing', 'News', 'Event', 'League', 'Post'],
     },
     commentableId: {
       type: mongoose.Schema.Types.ObjectId,
